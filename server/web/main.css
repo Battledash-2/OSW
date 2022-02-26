@@ -1,0 +1,219 @@
+body, html {
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
+}
+
+:root {
+	/* taskbar */
+	--taskbar-height: 6vh;
+	--taskbar-background: #333;
+	--taskbar-foreground: #fff;
+	--taskbar-bold: bolder;
+	--taskbar-font: Monospace, Arial, sans-serif;
+	--taskbar-font-size: 2.3rem;
+	--taskbar-padding-left: 10px;
+
+	/* desktop */
+	--desktop-width: 100%;
+	--desktop-height: 100vh;
+	--desktop-background: #fff;
+	--desktop-foreground: #333;
+	--desktop-bold: bolder;
+	--desktop-font: Monospace, Arial, sans-serif;
+	--desktop-font-size: 1.3rem;
+
+	/* desktop application */
+	--application-width: 5vw;
+	--application-height: 5vw;
+	--application-background: rgb(88, 88, 88);
+	--application-background-hover: rgb(138, 137, 137);
+	--application-foreground: rgb(255, 255, 255);
+	--application-font: Monospace, Arial, sans-serif;
+	--application-radius: 5%;
+	--application-bold: bolder;
+	--application-margin: .4vh;
+	--application-margin-left: .2vw;
+	--application-text-align: center;
+	--application-font-size: 1.2rem;
+	--application-padding: .3%;
+
+	/* applications */
+	--app-height: 50vh;
+	--app-width: 50vw;
+	--app-background: rgb(160, 158, 158);
+
+	--app-title-font: Monospace, Arial, sans-serif;
+	--app-title-bold: bolder;
+	--app-title-color: #fff;
+	--app-title-background: #333;
+
+	--app-title-height: 4rem;
+	--app-title-ctrl-hover: rgb(197, 197, 197);
+
+	--app-body-font: Monospace, Arial, sans-serif;
+	--app-body-bold: bolder;
+	--app-body-background: var(--app-background);
+	--app-body-foreground: #fff;
+	--app-body-font-size: 1.2em;
+
+	/* task */
+	--task-margin: -.4vw;
+	--task-width: 5vw;
+	--task-background: #555;
+	--task-background-hover: rgb(128, 126, 126);
+	--task-bold: bolder;
+	--task-font: Monospace, Arial, sans-serif;
+	--task-foreground: #fff;
+	--task-font-size: 1.2rem;
+}
+
+.task:hover {
+	background: var(--task-background-hover);
+}
+.task {
+	display: inline-block;
+	width: var(--task-width);
+	height: var(--taskbar-height);
+	text-align: center;
+	margin-left: var(--task-margin);
+	background: var(--task-background);
+	font-weight: var(--task-bold);
+	font-family: var(--task-font);
+	font-size: var(--task-font-size);
+	color: var(--task-foreground);
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	cursor: pointer;
+}
+.application > .application-body, .application > .application-body > iframe {
+	width: 100%;
+	font-family: var(--app-body-font);
+	font-weight: var(--app-body-bold);
+	background: var(--app-body-background);
+	color: var(--app-body-foreground);
+	font-size: var(--app-body-font-size);
+	border: 0;
+	outline: none;
+}
+.application > .application-header {
+	width: 100%;
+	background: var(--app-title-background);
+	height: var(--app-title-height);
+}
+.application > .application-header > h1 {
+	display: inline;
+	color: var(--app-title-color);
+	font-family: var(--app-title-font);
+	font-weight: var(--app-title-bold);
+	position: relative;
+	padding: 1% 1% 1% 1%;
+	top: 0;
+	cursor: default;
+}
+.application > .application-header > .application-controls {
+	display: inline;
+	position: absolute;
+	right: .2vw;
+	top: 1vh;
+	height: var(--app-title-height);
+}
+.application > .application-header > .application-controls > button {
+	outline: none;
+	border: none;
+	width: 3rem;
+	height: 100%;
+	position: relative;
+	font-weight: bolder;
+	font-size: large;
+	top: -21%;
+	cursor: pointer;
+}
+.application > .application-header > .application-controls > button:hover {
+	background: var(--app-title-ctrl-hover);
+}
+.application {
+	height: var(--app-height);
+	width: var(--app-width);
+	position: absolute;
+	/* left: calc(100vw / 2 - var(--app-width) / 2); */
+	/* top: calc(100vh / 2 - var(--app-height) / 2); */
+	left: 0;
+	top: 0;
+	background: var(--app-background);
+	resize: both;
+	overflow: auto;
+}
+.fullscreen {
+	left: 0 !important;
+	top: 0 !important;
+	width: 100vw !important;
+	height: calc(100vh - var(--taskbar-height)) !important;
+}
+
+.desktop-inner {
+	vertical-align: middle;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+.desktop-application:hover {
+	background: var(--application-background-hover);
+}
+.desktop-application {
+	cursor: pointer;
+	margin-top: var(--application-margin);
+	margin-left: var(--application-margin-left);
+	width: var(--application-width);
+	height: var(--application-height);
+	background: var(--application-background);
+	color: var(--application-foreground);
+	font-family: var(--application-font);
+	border-radius: var(--application-radius);
+	font-weight: var(--application-bold);
+	text-align: var(--application-text-align);
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	font-size: var(--application-font-size);
+	padding: var(--application-padding);
+}
+#desktop {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	gap: 0 0;
+	align-content: flex-start;
+
+	height: calc(var(--desktop-height) - var(--taskbar-height));
+	padding-left: var(--desktop-padding-left);
+	background: var(--desktop-background);
+
+	font-weight: var(--desktop-bold);
+	font-family: var(--desktop-font);
+	font-size: var(--desktop-font-size);
+	color: var(--desktop-foreground);
+}
+
+#i_home {
+	font-style: italic;
+	color: lightblue;
+	cursor: pointer;
+}
+#tasks {
+	position: absolute;
+	bottom: 0;
+
+	height: var(--taskbar-height);
+	background: var(--taskbar-background);
+	color: var(--taskbar-foreground);
+	font-weight: var(--taskbar-bold);
+	font-family: var(--taskbar-font);
+	font-size: var(--taskbar-font-size);
+
+	padding-left: var(--taskbar-padding-left);
+	width: calc(100% - var(--taskbar-padding-left));
+}
+#i_tasks, #i_home, .application > .application-header > .application-controls {
+	display: inline-block;
+	vertical-align: middle;
+	line-height: normal;
+}
