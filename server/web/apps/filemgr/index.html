@@ -87,7 +87,6 @@
 						document.querySelector('#view').innerHTML = '';
 						const textarea = document.createElement('textarea');
 						textarea.value = files[file].body;
-						console.log(files[file].body);
 						textarea.classList.add('file-editor');
 						textarea.addEventListener('input', (e)=>{
 							if (e )
