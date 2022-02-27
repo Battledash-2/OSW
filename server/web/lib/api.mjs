@@ -1,3 +1,5 @@
+let z = 0;
+
 // ------ Errors ------
 // FILES
 export class AUFNSP extends Error {}; // attempted, usage, (of), file, not, sufficent, permissions
@@ -96,8 +98,11 @@ const _application = () => {
 		}
 	};
 }
-export function createApplication(title, body, onMinimize=()=>{}, onFullscreen=()=>{}, onClose=()=>{}, width, height) {
+export function createApplication(title, body, isModule=false, onMinimize=()=>{}, onFullscreen=()=>{}, onClose=()=>{}, width, height) {
 	const application = _application();
+	application.item.addEventListener('mousedown', ()=>{
+		application.item.style.zIndex = ++z;
+	});
 	application.title.innerText = title;
 	application.body.innerHTML = body ?? '';
 
@@ -130,7 +135,7 @@ export function createApplication(title, body, onMinimize=()=>{}, onFullscreen=(
 		application.item.parentElement.removeChild(application.item);
 	});
 	
-	document.body.appendChild(application.item);
+	if (!isModule) document.body.appendChild(application.item);
 	return application;
 }
 
@@ -176,44 +181,53 @@ export function createDesktopItem(itemName='', onOpen=()=>{}) {
 	return task;
 }
 
-const ifiles = {};
+export let ifiles = {};
 export function saveFiles(files) {
 	files = files ?? ifiles;
 	localStorage.setItem('files', JSON.stringify(files));
 }
-export function loadFiles(files) {
+export function loadFiles(isModule=false, files) {
 	files = files ?? ifiles;
 	let res = localStorage.getItem('files');
 	if (res == null) return files;
 	files = JSON.parse(res);
+	ifiles = files;
+	if (!isModule) {
+		document.querySelector('#desktop').innerHTML = '';
+		for (let item in files) {
+			createDesktopItem(item, ()=>{
+				openFile(item);
+			});
+		}
+	}
+	
 	return files;
 }
 
-export function createFile(fileName='unknown.txt', fileBody='', files) {
+export function createFile(fileName='unknown.txt', fileBody='', isModule=false, files) {
 	files = files ?? ifiles;
-	if (typeof files[fileName] === 'undefined') createDesktopItem(fileName, ()=>{
-		createApplication(fileName + ' -- read', fileBody);
+	if (typeof files[fileName] === 'undefined' && !isModule) createDesktopItem(fileName, ()=>{
+		openFile(fileName);
 	});
 	files[fileName] = {
 		type: 'text',
 		body: fileBody,
 	}
 }
-export function createCmdShort(fileName='unknown.cmd', command='console.log("Hello, world!");', files) {
+export function createCmdShort(fileName='unknown.cmd', command='console.log("Hello, world!");', isModule=false, files) {
 	files = files ?? ifiles;
-	if (typeof files[fileName] === 'undefined') createDesktopItem(fileName, ()=>{
-		createApplication(fileName + ' -- inspect', command);
+	if (typeof files[fileName] === 'undefined' && !isModule) createDesktopItem(fileName, ()=>{
+		openFile(fileName);
 	});
 	files[fileName] = {
 		type: 'cmd',
 		body: command,
 	};
 }
-export function createAppletL(fileName='unknown.app', applet='<!DOCTYPE html>\n<html><body>\n\t<h1>Hello, world!</h1>\n</body>\n</html>', scripts='', files) {
+export function createAppletL(fileName='unknown.app', applet='<!DOCTYPE html>\n<html><body>\n\t<h1>Hello, world!</h1>\n</body>\n</html>', scripts='', isModule=false, files) {
 	files = files ?? ifiles;
-	if (typeof files[fileName] === 'undefined') createDesktopItem(fileName, ()=>{
-		createApplication(fileName, applet);
-		eval(scripts);
+	if (typeof files[fileName] === 'undefined' && !isModule) createDesktopItem(fileName, ()=>{
+		openFile(fileName);
 	});
 	files[fileName] = {
 		type: 'app',
@@ -221,22 +235,53 @@ export function createAppletL(fileName='unknown.app', applet='<!DOCTYPE html>\n<
 		script: scripts,
 	};
 }
+export function createWebFrameApplet(fileName='unknown.wap', appletPath='https://google.com', isModule=false, files) {
+	files = files ?? ifiles;
+	if (typeof files[fileName] === 'undefined' && !isModule) createDesktopItem(fileName, ()=>{
+		openFile(fileName);
+	});
+	files[fileName] = {
+		type: 'wap',
+		url: appletPath,
+	};
+}
 function _openFile(fileName='unknown.txt', files) {
 	files = files ?? ifiles;
 	if (typeof files[fileName] === 'undefined') throw new IORDNX(`[Read] attempt to read file '${fileName}' (but it doesn't exist)`);
 	return files[fileName];
 }
-export function openFile(filename='unknown.txt') {
+export function openFile(filename='unknown.txt', isModule=false) {
 	const file = _openFile(filename);
+	let application;
 	switch (file.type) {
 		case 'text':
-			return file.body;
+			application = createApplication(filename, file.body, isModule);
+			break;
 		case 'cmd':
 			return eval(file.body);
-		case 'app':
-			createApplication(filename, file.body);
+		case 'app': {
+			const iframe = document.createElement('iframe');
+			iframe.srcdoc = `
+			<script type="module">
+				// Injected
+				import * as api from "./lib/api.mjs"
+				window.api = api;
+				window.app = '${filename.replace(/'/g, '\\\'')}';
+			</script>
+			`+file.body;
+			application = createApplication(filename, iframe.outerHTML, isModule);
 			eval(file.script);
 			break;
+		}
+		case 'wap': {
+			application = createApplication(filename, '', isModule);
+			const iframe = elm('iframe');
+			iframe.src = file.url;
+			application.body.appendChild(iframe);
+			break;
+		}
+		default:
+			throw new AOFUTL(`[Read] attempt to read file '${filename}' of unknown type '${file.type}' (cannot launch)`);
 	}
-	throw new AOFUTL(`[Read] attempt to read file '${filename}' of unknown type '${file.type}' (cannot launch)`);
+	return application;
 }

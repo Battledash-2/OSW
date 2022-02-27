@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="main.css">
+</head>
+<body>
+	<div id="files">
+		<div id="files-container"></div>
+	</div>
+	<div id="view">
+		You have nothing opened...
+	</div>
+	<div id="controls">
+		<button id="create-file" class="control">Create</button>
+		<button id="delete-file" class="control">Delete</button>
+	</div>
+	<script type="module">
+		import * as api from "/lib/api.mjs"
+
+		api.loadFiles(true); // laod all files in module mode
+		let files = api.ifiles; // store files in a variable
+
+		let currentFile = '';
+		let selected;
+
+		const cf = document.querySelector('#create-file');
+		const df = document.querySelector('#delete-file');
+		cf.addEventListener('click', ()=>{
+			const fn = prompt('File to create:', 'unknown.txt');
+			// api.createFile(fn, '', true); // create the file
+			let file = {
+				type: fn.endsWith('.cmd') ? 'cmd' : 'text',
+				body: '',
+			};
+			if (fn.endsWith('.app') || fn.endsWith('.html') || fn.endsWith('.htm') || fn.split('.').length-1 < 1) {
+				file = {
+					type: 'app',
+					body: '',
+					script: '',
+					locallyCreated: true,
+				};
+			}
+			if (fn.endsWith('.cut')) {
+				file.type = 'wap';
+				file.url = '';
+				file.locallyCreated = true;
+			}
+			files[fn] = file;
+			api.saveFiles();
+			updateFiles();
+		});
+		df.addEventListener('click', ()=>{
+			const fn = prompt('File to delete:', 'unknown.txt');
+			if (api.ifiles.hasOwnProperty(fn)) delete api.ifiles[fn];
+			else alert('Could not find file');
+			if (currentFile === fn) {
+				currentFile = '';
+				selected = null;
+				document.querySelector('#view').innerHTML = 'You have nothing opened...';
+			}
+			api.saveFiles();
+			updateFiles();
+		});
+
+		const createItem = (itemName, onClick=()=>{}) => { // creates a file element
+			const file = document.createElement('div');
+			file.classList.add('file');
+			const span = document.createElement('span');
+			span.innerText = itemName;
+			file.appendChild(span);
+			file.addEventListener('click', ()=>onClick(file));
+			document.querySelector('#files > #files-container').appendChild(file);
+			return file;
+		}
+		const updateFiles = ()=>{
+			document.querySelector('#files-container').innerHTML = '';
+			for (let file in files) {
+				createItem(file, (f)=>{
+					if (selected != null) selected.style.background = '#333';
+					selected = f;
+					selected.style.background = '#555';
+					if (files[file].type === 'text' || files[file].type === 'cmd' || files[file].locallyCreated === true) {
+						currentFile = file;
+						document.querySelector('#view').innerHTML = '';
+						const textarea = document.createElement('textarea');
+						textarea.value = files[file].body;
+						console.log(files[file].body);
+						textarea.classList.add('file-editor');
+						textarea.addEventListener('input', (e)=>{
+							if (e )
+							files[file].body = textarea.value;
+							if (files[file].type === 'wap') files[file].url = textarea.value;
+							api.saveFiles(files);
+						});
+						document.querySelector('#view').appendChild(textarea);
+					} else {
+						currentFile = file;
+						const application = api.openFile(file, true);
+						document.querySelector('#view').innerHTML = '';
+						document.querySelector('#view').appendChild(application.body);				
+					}
+				});
+			}
+		}
+		updateFiles();
+		setInterval(()=>{
+			files = api.loadFiles(true);
+			updateFiles();
+		}, 5000);
+	</script>
+</body>
+</html>

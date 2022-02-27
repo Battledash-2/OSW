@@ -12,8 +12,10 @@
 	<div id="desktop"></div>
 	<div id="tasks">
 		<span id="i_home"> K </span>
-		<div id="i_tasks">
-		</div>
 	</div>
+	<script type="module">
+		import * as api from "./lib/api.mjs"
+		window.api = api;
+	</script>
 </body>
 </html>
