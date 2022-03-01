@@ -270,6 +270,7 @@ export function openFile(filename='unknown.txt', isModule=false) {
 			</script>
 			`+file.body;
 			application = createApplication(filename, iframe.outerHTML, isModule);
+			iframe.focus();
 			eval(file.script);
 			break;
 		}
@@ -278,6 +279,7 @@ export function openFile(filename='unknown.txt', isModule=false) {
 			const iframe = elm('iframe');
 			iframe.src = file.url;
 			application.body.appendChild(iframe);
+			iframe.focus();
 			break;
 		}
 		default:
