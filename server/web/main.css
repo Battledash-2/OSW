@@ -53,7 +53,7 @@ body, html {
 
 	--app-body-font: Monospace, Arial, sans-serif;
 	--app-body-bold: bolder;
-	--app-body-background: var(--app-background);
+	--app-body-background: #fff;
 	--app-body-foreground: #fff;
 	--app-body-font-size: 1.2em;
 
