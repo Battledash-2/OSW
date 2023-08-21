@@ -1,4 +1,4 @@
-import * as api from "./api.mjs";
+import * as api from "./lib/api.mjs";
 
 api.loadFiles();
 
